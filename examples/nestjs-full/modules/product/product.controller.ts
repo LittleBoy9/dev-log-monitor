@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { ProductService } from './product.service';
-import { devLogger } from '../../../..';
+import { devLogger } from 'dev-log-monitor';
 
 @Controller('products')
 export class ProductController {

@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { NotificationService } from './notification.service';
-import { devLogger } from '../../../..';
+import { devLogger } from 'dev-log-monitor';
 
 @Controller('notifications')
 export class NotificationController {

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { devLogger } from '../../../..';
+import { devLogger } from 'dev-log-monitor';
 import { db, User } from '../../shared/database';
 
 @Injectable()

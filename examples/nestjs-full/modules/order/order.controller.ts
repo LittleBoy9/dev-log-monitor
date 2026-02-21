@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { OrderService } from './order.service';
-import { devLogger } from '../../../..';
+import { devLogger } from 'dev-log-monitor';
 
 @Controller('orders')
 export class OrderController {

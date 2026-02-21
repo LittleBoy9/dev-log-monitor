@@ -1,12 +1,14 @@
 /**
  * NestJS Test Example
- * Run with: npx ts-node examples/nestjs-test.ts
+ *
+ * Run with: npx ts-node -r tsconfig-paths/register --project examples/tsconfig.json examples/nestjs-test.ts
+ * (requires: npm install @nestjs/common @nestjs/core @nestjs/platform-express reflect-metadata tsconfig-paths)
  */
 
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { Module, Controller, Get, Post, Body, Injectable, Logger } from '@nestjs/common';
-import { devLogger } from '..';
+import { devLogger } from 'dev-log-monitor';
 
 // User Service with scoped logger
 @Injectable()
@@ -80,8 +82,8 @@ class AppController {
 
   @Get('debug')
   triggerDebug() {
-    this.logger.debug('Debug information', { details: 'some debug data' });
-    this.logger.verbose('Verbose logging test');
+    this.logger.debug('Debug information');
+    this.logger.verbose('Verbose logging test (maps to debug)');
     return { status: 'debug logged' };
   }
 }
@@ -102,6 +104,16 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: devLogger.nest(),
   });
+
+  // Graceful shutdown
+  const shutdown = async () => {
+    console.log('\nShutting down...');
+    await app.close();
+    await devLogger.shutdown();
+    process.exit(0);
+  };
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
 
   const PORT = 4001;
   await app.listen(PORT);

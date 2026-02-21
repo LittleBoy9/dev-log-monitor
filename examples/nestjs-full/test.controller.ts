@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Param, HttpException, HttpStatus } from '@nestjs/common';
-import { devLogger } from '../..';
+import { devLogger } from 'dev-log-monitor';
 
 // Custom error classes for demo
 class PaymentError extends Error {

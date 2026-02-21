@@ -1,5 +1,5 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { devLogger } from '../../../..';
+import { devLogger } from 'dev-log-monitor';
 import { db } from '../../shared/database';
 import { UserService } from '../user/user.service';
 

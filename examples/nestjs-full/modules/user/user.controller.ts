@@ -1,7 +1,7 @@
 import { Controller, Get, Param, ParseIntPipe, Inject, forwardRef } from '@nestjs/common';
 import { UserService } from './user.service';
 import { OrderService } from '../order/order.service';
-import { devLogger } from '../../../..';
+import { devLogger } from 'dev-log-monitor';
 
 @Controller('users')
 export class UserController {

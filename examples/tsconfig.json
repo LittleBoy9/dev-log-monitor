@@ -8,7 +8,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "baseUrl": ".",
+    "paths": {
+      "dev-log-monitor": ["../src/index.ts"],
+      "dev-log-monitor/auto": ["../src/auto/index.ts"]
+    }
   },
   "include": ["./**/*.ts"]
 }

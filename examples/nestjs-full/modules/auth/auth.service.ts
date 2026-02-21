@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException, Inject, forwardRef } from '@nestjs/common';
-import { devLogger } from '../../../..';
+import { devLogger } from 'dev-log-monitor';
 import { UserService } from '../user/user.service';
 import { db } from '../../shared/database';
 

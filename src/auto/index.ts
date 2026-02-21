@@ -193,8 +193,8 @@ ready = (async () => {
     return;
   }
 
-  // Check for explicit disable
-  if (process.env.DEV_LOG_DISABLE === 'true') {
+  // Check for explicit disable (support both spellings)
+  if (process.env.DEV_LOG_DISABLE === 'true' || process.env.DEV_LOG_DISABLED === 'true') {
     return;
   }
 
@@ -206,6 +206,7 @@ ready = (async () => {
       port: parseInt(process.env.DEV_LOG_PORT || '3333', 10),
       interceptConsole: process.env.DEV_LOG_INTERCEPT !== 'false',
       masking: process.env.DEV_LOG_MASKING !== 'false',
+      consoleOutput: process.env.DEV_LOG_CONSOLE !== 'false',
     };
     if (process.env.DEV_LOG_RETENTION) envConfig.retentionDays = parseInt(process.env.DEV_LOG_RETENTION, 10);
     if (process.env.DEV_LOG_DIR) envConfig.logDir = process.env.DEV_LOG_DIR;

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
-import { devLogger } from '../../../..';
+import { devLogger } from 'dev-log-monitor';
 import { db, Order, OrderItem } from '../../shared/database';
 import { UserService } from '../user/user.service';
 import { ProductService } from '../product/product.service';

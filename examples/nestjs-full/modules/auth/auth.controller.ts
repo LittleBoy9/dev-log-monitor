@@ -1,6 +1,6 @@
 import { Controller, Post, Body, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { devLogger } from '../../../..';
+import { devLogger } from 'dev-log-monitor';
 
 @Controller('auth')
 export class AuthController {
