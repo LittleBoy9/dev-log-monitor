@@ -1,6 +1,6 @@
 {
   "name": "dev-log-monitor",
-  "version": "0.1.0-beta.2",
+  "version": "1.0.0",
   "description": "Lightweight local log diagnostics for NestJS, Express, and Node.js development with real-time UI, error tracing, and breadcrumbs",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -22,7 +22,7 @@
   },
   "files": [
     "dist",
-    "src/ui"
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsup",
@@ -54,14 +54,13 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sounakdas/dev-log.git"
+    "url": "https://github.com/LittleBoy9/dev-log-monitor.git"
   },
   "bugs": {
-    "url": "https://github.com/sounakdas/dev-log/issues"
+    "url": "https://github.com/LittleBoy9/dev-log-monitor/issues"
   },
-  "homepage": "https://github.com/sounakdas/dev-log#readme",
+  "homepage": "https://github.com/LittleBoy9/dev-log-monitor#readme",
   "publishConfig": {
-    "tag": "beta",
     "access": "public"
   },
   "devDependencies": {

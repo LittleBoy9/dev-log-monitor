@@ -9,7 +9,7 @@
 
 A zero-dependency development logger with real-time web UI, error tracing, breadcrumbs, and beautiful stack trace visualization. Works with ANY existing logger (console, winston, pino, bunyan, or custom).
 
-## ✨ Features
+## Features
 
 - **One-Line Integration** - Just add `import 'dev-log-monitor/auto'` to intercept all logs
 - **Works with Any Logger** - Console, Winston, Pino, Bunyan, or any custom logger
@@ -78,19 +78,33 @@ NODE_ENV=production
 
 ## Configuration
 
-### Auto-Integration Config
+### Environment Variables
 
-Configure via environment variables:
+All configuration can be done via environment variables (no config files needed):
 
 ```bash
-DEV_LOG_PORT=3333           # UI server port
-DEV_LOG_DIR=.dev-log        # Log storage directory
-DEV_LOG_RETENTION=3         # Days to keep logs
-DEV_LOG_CONSOLE=true        # Also print to console
-DEV_LOG_DISABLED=false      # Disable entirely
+# Core
+DEV_LOG_PORT=3333              # Web UI port
+DEV_LOG_DIR=.dev-log           # Log storage directory
+DEV_LOG_RETENTION=3            # Days to keep logs
+DEV_LOG_CONSOLE=true           # Also print to console (set 'false' to suppress)
+
+# Features
+DEV_LOG_INTERCEPT=true         # Intercept console.log calls (set 'false' to disable)
+DEV_LOG_MASKING=true           # Auto-mask sensitive data (set 'false' to disable)
+
+# Storage limits
+DEV_LOG_STORAGE_LEVEL=debug    # Minimum level to persist (debug|info|warn|error)
+DEV_LOG_MAX_FILE_SIZE=52428800 # Max per-file size in bytes (default 50MB)
+DEV_LOG_MAX_TOTAL_SIZE=104857600 # Max total storage in bytes (default 100MB)
+
+# Disable
+DEV_LOG_DISABLE=true           # Disable dev-log entirely
+DEV_LOG_DISABLED=true          # Alias for DEV_LOG_DISABLE
+NODE_ENV=production            # Also disables dev-log
 ```
 
-Or configure programmatically:
+### Programmatic Config
 
 ```typescript
 import { autoInit } from 'dev-log-monitor';
@@ -101,6 +115,9 @@ await autoInit({
   retentionDays: 3,
   consoleOutput: true,
   interceptConsole: true,
+  storageLevel: 'debug',
+  maxFileSize: 50 * 1024 * 1024,    // 50MB
+  maxTotalSize: 100 * 1024 * 1024,  // 100MB
 });
 ```
 
@@ -113,16 +130,16 @@ import { configureMasking } from 'dev-log-monitor';
 
 configureMasking({
   enabled: true,
-  sensitiveKeys: ['password', 'token', 'secret', 'apiKey', 'authorization'],
-  patterns: [
-    { name: 'credit-card', pattern: /\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b/g, replacement: '[CARD ****]' },
-    { name: 'ssn', pattern: /\b\d{3}-\d{2}-\d{4}\b/g, replacement: '[SSN ***]' },
+  sensitiveKeys: ['myCustomSecret', 'internalId'],
+  customPatterns: [
+    { name: 'order-id', pattern: /ORDER-\d{6,}/g, replacement: 'ORDER-[REDACTED]' },
   ],
+  fullMask: false,     // false = partial mask (show first/last chars)
   maskChar: '*',
 });
 ```
 
-Default masked keys: `password`, `passwd`, `secret`, `token`, `apiKey`, `api_key`, `authorization`, `auth`, `credential`, `private`, `ssn`, `creditCard`, `cardNumber`
+Default masked keys: `password`, `passwd`, `secret`, `token`, `apiKey`, `api_key`, `authorization`, `auth`, `credential`, `private`, `ssn`, `creditCard`, `cardNumber`, `cvv`, `pin`, `accountNumber`, and 50+ more.
 
 ## Working with Existing Loggers
 
@@ -268,14 +285,18 @@ Track logs across async operations:
 import { asyncContext, getTraceId } from 'dev-log-monitor';
 
 // Wrap async operations to correlate logs
-asyncContext.run({ traceId: 'request-123' }, async () => {
-  console.log('Start processing');  // traceId: request-123
-  await someAsyncOperation();
-  console.log('Done processing');   // traceId: request-123
-});
+asyncContext.run(() => {
+  console.log('Start processing');  // auto-assigned traceId
+  someAsyncOperation().then(() => {
+    console.log('Done processing');  // same traceId
+  });
+}, { method: 'GET', path: '/api/users' });
 
-// Get current trace ID anywhere
-const traceId = getTraceId();
+// Or with a custom traceId
+asyncContext.run(() => {
+  const id = getTraceId();  // returns the auto-generated or custom traceId
+  console.log(`Processing with trace: ${id}`);
+}, { traceId: 'custom-trace-123' });
 ```
 
 ## Alerting
@@ -286,24 +307,46 @@ Get notified when important events occur:
 import { addAlertRule, addWebhook } from 'dev-log-monitor';
 
 // Add a webhook endpoint
-addWebhook({
+addWebhook('slack', {
   url: 'https://hooks.slack.com/services/xxx',
-  events: ['error'],
+  method: 'POST',
 });
 
-// Custom alert rules
+// Alert on high error rate
 addAlertRule({
-  name: 'high-error-rate',
-  condition: { type: 'error_rate', threshold: 0.1, window: 60000 },
-  action: 'webhook',
-  webhookUrl: 'https://hooks.slack.com/services/xxx',
+  id: 'high-error-rate',
+  name: 'High Error Rate',
+  condition: { type: 'error_rate', threshold: 5 },
+  handlers: ['webhook:slack', 'console'],
+  cooldownMs: 60_000,
 });
 
+// Alert on specific patterns
 addAlertRule({
-  name: 'payment-errors',
-  condition: { type: 'pattern', pattern: /payment.*failed/i },
-  action: 'webhook',
-  webhookUrl: 'https://hooks.slack.com/services/xxx',
+  id: 'payment-errors',
+  name: 'Payment Failures',
+  condition: { type: 'pattern', pattern: /payment.*failed/i, level: 'error' },
+  handlers: ['console'],
+  cooldownMs: 10_000,
+});
+
+// Alert on slow operations
+addAlertRule({
+  id: 'slow-ops',
+  name: 'Slow Operations',
+  condition: { type: 'slow_operation', threshold: 1000 },
+  handlers: ['console'],
+});
+
+// Custom condition
+addAlertRule({
+  id: 'custom',
+  name: 'Custom Check',
+  condition: {
+    type: 'custom',
+    check: (entry) => entry.level === 'error' && entry.context === 'PaymentService',
+  },
+  handlers: ['console'],
 });
 ```
 
@@ -314,24 +357,25 @@ Track log statistics:
 ```typescript
 import { getMetrics, onMetricsUpdate } from 'dev-log-monitor';
 
-// Get current metrics
-const metrics = getMetrics();
-console.log(metrics);
-// {
-//   total: 1234,
-//   byLevel: { debug: 100, info: 800, warn: 200, error: 134 },
-//   bySource: { console: 500, nest: 400, express: 334 },
-//   errorRate: 0.108,
-//   logsPerSecond: 2.5,
-//   avgResponseTime: 45.2
-// }
+// Get current metrics snapshot
+const snapshot = getMetrics();
+console.log(snapshot.counts);
+// { debug: 100, info: 800, warn: 200, error: 134, total: 1234 }
+console.log(snapshot.errorRate);       // errors per minute
+console.log(snapshot.logsPerSecond);   // throughput
+console.log(snapshot.recentErrors);    // last N errors
+console.log(snapshot.slowOperations);  // operations exceeding threshold
+console.log(snapshot.contextCounts);   // counts per service/context
 
 // Subscribe to metrics updates
-const unsubscribe = onMetricsUpdate((metrics) => {
-  if (metrics.errorRate > 0.1) {
+const unsubscribe = onMetricsUpdate((snapshot) => {
+  if (snapshot.errorRate > 5) {
     console.warn('High error rate detected!');
   }
 });
+
+// Later: stop listening
+unsubscribe();
 ```
 
 ## Web UI
@@ -363,15 +407,6 @@ After adding the import, open http://localhost:3333 in your browser.
 | `c` | Clear logs |
 | `?` | Show keyboard shortcuts |
 | `Esc` | Close modals/clear selection |
-
-### Export
-
-Export logs via the UI or programmatically:
-
-```typescript
-// In browser console or via UI
-// Supports JSON, CSV, and plain text formats
-```
 
 ### Enhanced Error Display
 
@@ -418,7 +453,7 @@ npx dev-log-monitor help
 |--------|-------------|
 | `import 'dev-log-monitor/auto'` | One-line auto-integration |
 | `autoInit(config)` | Configure and initialize manually |
-| `configureMasking(config)` | Configure sensitive data masking |
+| `configureMasking(options)` | Configure sensitive data masking |
 | `wrapLogger(logger, type?)` | Wrap existing logger |
 | `asyncContext` | Request context manager |
 | `getTraceId()` | Get current trace ID |
@@ -431,16 +466,15 @@ npx dev-log-monitor help
 | Export | Description |
 |--------|-------------|
 | `addAlertRule(rule)` | Add custom alert rule |
-| `removeAlertRule(name)` | Remove alert rule |
-| `addWebhook(config)` | Add webhook endpoint |
-| `removeWebhook(url)` | Remove webhook |
+| `addWebhook(name, config)` | Add named webhook endpoint |
+| `configureAlerts(config)` | Configure alerts with rules and webhooks |
 
 ### Metrics
 
 | Export | Description |
 |--------|-------------|
 | `getMetrics()` | Get current metrics snapshot |
-| `onMetricsUpdate(callback)` | Subscribe to metrics updates |
+| `onMetricsUpdate(callback)` | Subscribe to metrics updates (returns unsubscribe fn) |
 
 ### Core Logger
 
@@ -487,30 +521,10 @@ Add to your `.gitignore`:
 - `@nestjs/common` >= 9.0.0 (for NestJS adapter)
 - `express` >= 4.0.0 (for Express middleware)
 
-## Migration from v0.0.x
-
-If you were using the manual integration:
-
-```typescript
-// Before (v0.0.x)
-import { devLogger } from 'dev-log-monitor';
-await devLogger.init({ port: 3333 });
-devLogger.info('Hello');
-
-// After (v0.1.x) - Option 1: Auto-integration (recommended)
-import 'dev-log-monitor/auto';
-console.log('Hello');  // Automatically captured!
-
-// After (v0.1.x) - Option 2: Keep using devLogger directly
-import 'dev-log-monitor/auto';
-import { devLogger } from 'dev-log-monitor';
-devLogger.info('Hello');  // No need to call init()
-```
-
 ## License
 
 MIT
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request.
+Contributions are welcome! Please open an issue or submit a pull request at [GitHub](https://github.com/LittleBoy9/dev-log-monitor).
