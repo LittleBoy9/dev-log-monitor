@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dev-log</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <div class="header-left">
+        <h1>dev-log</h1>
+        <span class="version-badge">monitor</span>
+      </div>
+      <div class="header-right">
+        <button class="icon-btn" id="metricsToggle" title="Metrics (M)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"></polyline>
+          </svg>
+        </button>
+        <button class="icon-btn" id="exportBtn" title="Export (E)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </button>
+        <button class="icon-btn" id="themeToggle" title="Toggle Theme (T)">
+          <svg class="sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+        <button class="icon-btn" id="keyboardHelp" title="Keyboard Shortcuts (?)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </button>
+        <div class="connection-status" id="status">
+          <span class="status-dot"></span>
+          <span class="status-text">Connecting...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Metrics Panel (hidden by default) -->
+    <div class="metrics-panel hidden" id="metricsPanel">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-value" id="metricTotal">0</div>
+          <div class="metric-label">Total Logs</div>
+        </div>
+        <div class="metric-card error">
+          <div class="metric-value" id="metricErrors">0</div>
+          <div class="metric-label">Errors</div>
+        </div>
+        <div class="metric-card warning">
+          <div class="metric-value" id="metricWarnings">0</div>
+          <div class="metric-label">Warnings</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="metricRate">0</div>
+          <div class="metric-label">Logs/sec</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="search-box">
+        <input type="text" id="search" placeholder="Search logs... (Press / to focus)" />
+        <div class="search-options">
+          <label class="checkbox-label" title="Use Regular Expression">
+            <input type="checkbox" id="regexToggle">
+            <span>Regex</span>
+          </label>
+          <label class="checkbox-label" title="Case Sensitive Search">
+            <input type="checkbox" id="caseSensitive">
+            <span>Aa</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="filters">
+        <div class="filter-group">
+          <label>Level:</label>
+          <div class="level-filters">
+            <button class="level-btn active" data-level="all">All</button>
+            <button class="level-btn" data-level="debug">Debug</button>
+            <button class="level-btn" data-level="info">Info</button>
+            <button class="level-btn" data-level="warn">Warn</button>
+            <button class="level-btn" data-level="error">Error</button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Time:</label>
+          <select id="timeFilter">
+            <option value="all">All time</option>
+            <option value="5m">Last 5 minutes</option>
+            <option value="15m">Last 15 minutes</option>
+            <option value="1h">Last hour</option>
+            <option value="24h">Last 24 hours</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Context:</label>
+          <select id="contextFilter">
+            <option value="">All contexts</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Source:</label>
+          <select id="sourceFilter">
+            <option value="">All sources</option>
+            <option value="node">Node.js</option>
+            <option value="nest">NestJS</option>
+            <option value="express">Express</option>
+            <option value="console">Console</option>
+            <option value="winston">Winston</option>
+            <option value="pino">Pino</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+
+        <button class="clear-btn" id="clearLogs" title="Clear All Logs">Clear Logs</button>
+      </div>
+    </div>
+
+    <div class="log-container">
+      <div class="log-list" id="logList">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-text">No logs yet</div>
+          <div class="empty-hint">Start logging to see entries here</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keyboard shortcuts modal -->
+    <div class="modal hidden" id="shortcutsModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Keyboard Shortcuts</h2>
+          <button class="modal-close" id="closeShortcuts">&times;</button>
+        </div>
+        <div class="shortcuts-list">
+          <div class="shortcut-item">
+            <kbd>/</kbd>
+            <span>Focus search</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>Esc</kbd>
+            <span>Clear search / Close modal</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>j</kbd>
+            <span>Next log</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>k</kbd>
+            <span>Previous log</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>Enter</kbd>
+            <span>Expand/collapse selected</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>1-4</kbd>
+            <span>Filter by level (1=All, 2=Info, 3=Warn, 4=Error)</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>t</kbd>
+            <span>Toggle theme</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>m</kbd>
+            <span>Toggle metrics panel</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>e</kbd>
+            <span>Export logs</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>c</kbd>
+            <span>Clear logs (with confirmation)</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd>?</kbd>
+            <span>Show this help</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export modal -->
+    <div class="modal hidden" id="exportModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Export Logs</h2>
+          <button class="modal-close" id="closeExport">&times;</button>
+        </div>
+        <div class="export-options">
+          <p class="export-info">Export <span id="exportCount">0</span> logs (filtered)</p>
+          <div class="export-buttons">
+            <button class="export-option" data-format="json">
+              <span class="export-icon">{ }</span>
+              <span>JSON</span>
+            </button>
+            <button class="export-option" data-format="csv">
+              <span class="export-icon">📊</span>
+              <span>CSV</span>
+            </button>
+            <button class="export-option" data-format="txt">
+              <span class="export-icon">📄</span>
+              <span>Text</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
