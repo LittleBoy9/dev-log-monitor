@@ -59,7 +59,7 @@
   "bugs": {
     "url": "https://github.com/LittleBoy9/dev-log-monitor/issues"
   },
-  "homepage": "https://github.com/LittleBoy9/dev-log-monitor#readme",
+  "homepage": "https://littleboy9.github.io/dev-log-monitor/",
   "publishConfig": {
     "access": "public"
   },

@@ -1,204 +1,97 @@
-# dev-log-monitor
+<p align="center">
+  <img src="https://img.shields.io/npm/v/dev-log-monitor.svg?style=flat-square&color=D6BD98&labelColor=1A3636" alt="npm version">
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square&labelColor=1A3636" alt="License: MIT">
+  <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-677D6A?style=flat-square&labelColor=1A3636" alt="Node >= 18">
+  <img src="https://img.shields.io/badge/dependencies-0-40534C?style=flat-square&labelColor=1A3636" alt="Zero Dependencies">
+  <img src="https://img.shields.io/npm/dm/dev-log-monitor.svg?style=flat-square&color=D6BD98&labelColor=1A3636" alt="Downloads">
+</p>
 
-> Lightweight local log diagnostics for NestJS, Express, and Node.js development
+<h1 align="center">dev-log-monitor</h1>
 
-[![npm version](https://img.shields.io/npm/v/dev-log-monitor.svg)](https://www.npmjs.com/package/dev-log-monitor)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<p align="center">
+  <strong>Your existing logger + console.log(), but finally usable.</strong><br>
+  <sub>Real-time web UI &bull; Error tracing &bull; Breadcrumbs &bull; Data masking &bull; Zero dependencies</sub>
+</p>
 
-**Your existing logger + console.log(), but finally usable.**
+<p align="center">
+  <a href="https://littleboy9.github.io/dev-log-monitor/">Website</a> &nbsp;&bull;&nbsp;
+  <a href="https://www.npmjs.com/package/dev-log-monitor">npm</a> &nbsp;&bull;&nbsp;
+  <a href="https://github.com/LittleBoy9/dev-log-monitor/issues">Issues</a>
+</p>
 
-A zero-dependency development logger with real-time web UI, error tracing, breadcrumbs, and beautiful stack trace visualization. Works with ANY existing logger (console, winston, pino, bunyan, or custom).
+<br>
 
-## Features
+---
 
-- **One-Line Integration** - Just add `import 'dev-log-monitor/auto'` to intercept all logs
-- **Works with Any Logger** - Console, Winston, Pino, Bunyan, or any custom logger
-- **Real-time Web UI** - View logs at `http://localhost:3333` with live updates
-- **Source Location Tracking** - See exactly where each log was called (`file:line -> function()`)
-- **Timing Deltas** - Track time between logs (`+50ms`, `+1.2s`)
-- **Breadcrumbs** - See what happened before errors (last 10 logs)
-- **Parsed Stack Traces** - App code highlighted, node_modules collapsed
-- **Request Correlation** - Track logs across async operations with trace IDs
-- **Sensitive Data Masking** - Auto-mask passwords, tokens, credit cards
-- **Alerting** - Get notified via webhooks when errors occur
-- **Metrics** - Track error rates, log frequency, and performance
-- **Dark/Light Theme** - Easy on the eyes
-- **Keyboard Shortcuts** - Navigate quickly with vim-style shortcuts
-- **Export** - Download logs as JSON, CSV, or text
-- **Zero Dependencies** - No external runtime dependencies
-
-## Installation
+## Quick Start
 
 ```bash
 npm install dev-log-monitor
 ```
 
-## Quick Start (One-Line Integration)
-
-The easiest way to use dev-log-monitor is with auto-integration. Just add one import at the top of your entry file:
-
 ```typescript
-// Add this ONE LINE at the very top of your entry file (before other imports)
+// Add this ONE LINE at the top of your entry file
 import 'dev-log-monitor/auto';
 
-// Your existing code works unchanged
+// That's it. Open http://localhost:3333
 console.log('This will appear in the dev-log UI!');
-console.error('Errors too!');
 ```
 
-That's it! Open http://localhost:3333 to view your logs.
+> Auto-disables in production (`NODE_ENV=production`). Zero config needed.
 
-### How Auto-Integration Works
+---
 
-When you import `dev-log-monitor/auto`:
+## Why dev-log-monitor?
 
-1. **Console Interception** - All `console.log`, `console.error`, `console.warn`, `console.debug` calls are captured
-2. **Source Tracking** - Each log shows the exact file and line number where it was called
-3. **Request Context** - Logs from the same request are automatically correlated
-4. **Sensitive Data Masking** - Passwords, tokens, and other sensitive data are automatically masked
+| Problem | Solution |
+|---------|----------|
+| "Which console.log printed this?" | Source location tracking (`file:line -> function()`) |
+| "What happened before the crash?" | Breadcrumbs - last 10 logs before any error |
+| "I can't read these stack traces" | Parsed & highlighted - your code vs node_modules |
+| "Logs are flying by too fast" | Real-time web UI with filtering, search, and export |
+| "Sensitive data in logs" | Auto-masks passwords, tokens, cards, SSNs (72+ fields) |
+| "Different loggers everywhere" | Works with console, Winston, Pino, Bunyan, or custom |
 
-### Remove for Production
+---
 
-The auto-integration automatically disables itself in production:
+## Features
 
-```typescript
-// Automatically skips when NODE_ENV=production
-import 'dev-log-monitor/auto';
-```
+<table>
+<tr>
+<td width="50%">
 
-Or use environment variables:
+**One-Line Integration**<br>
+<code>import 'dev-log-monitor/auto'</code> intercepts all console methods, starts the UI, and enables masking.
 
-```bash
-# Disable dev-log entirely
-DEV_LOG_DISABLE=true
+**Real-Time Web UI**<br>
+Beautiful log viewer at `localhost:3333` with WebSocket live updates, dark/light themes, and vim-style keyboard shortcuts.
 
-# Or use production mode
-NODE_ENV=production
-```
+**Source Location**<br>
+Every log shows file, line, column, and function name. No more guessing.
 
-## Configuration
+**Breadcrumbs**<br>
+See the last 10 logs before any error. Full context for every crash.
 
-### Environment Variables
+</td>
+<td width="50%">
 
-All configuration can be done via environment variables (no config files needed):
+**Sensitive Data Masking**<br>
+Auto-redacts passwords, tokens, API keys, credit cards, SSNs. Add custom patterns too.
 
-```bash
-# Core
-DEV_LOG_PORT=3333              # Web UI port
-DEV_LOG_DIR=.dev-log           # Log storage directory
-DEV_LOG_RETENTION=3            # Days to keep logs
-DEV_LOG_CONSOLE=true           # Also print to console (set 'false' to suppress)
+**Timing & Metrics**<br>
+Timing deltas between logs, operation timers, error rates, and throughput tracking.
 
-# Features
-DEV_LOG_INTERCEPT=true         # Intercept console.log calls (set 'false' to disable)
-DEV_LOG_MASKING=true           # Auto-mask sensitive data (set 'false' to disable)
+**Parsed Stack Traces**<br>
+App code highlighted, node_modules collapsed. Copy or expand with one click.
 
-# Storage limits
-DEV_LOG_STORAGE_LEVEL=debug    # Minimum level to persist (debug|info|warn|error)
-DEV_LOG_MAX_FILE_SIZE=52428800 # Max per-file size in bytes (default 50MB)
-DEV_LOG_MAX_TOTAL_SIZE=104857600 # Max total storage in bytes (default 100MB)
+**Alerts & Webhooks**<br>
+Get notified on error spikes, pattern matches, or slow operations.
 
-# Disable
-DEV_LOG_DISABLE=true           # Disable dev-log entirely
-DEV_LOG_DISABLED=true          # Alias for DEV_LOG_DISABLE
-NODE_ENV=production            # Also disables dev-log
-```
+</td>
+</tr>
+</table>
 
-### Programmatic Config
-
-```typescript
-import { autoInit } from 'dev-log-monitor';
-
-await autoInit({
-  port: 3333,
-  logDir: '.dev-log',
-  retentionDays: 3,
-  consoleOutput: true,
-  interceptConsole: true,
-  storageLevel: 'debug',
-  maxFileSize: 50 * 1024 * 1024,    // 50MB
-  maxTotalSize: 100 * 1024 * 1024,  // 100MB
-});
-```
-
-### Sensitive Data Masking
-
-Configure which data to mask:
-
-```typescript
-import { configureMasking } from 'dev-log-monitor';
-
-configureMasking({
-  enabled: true,
-  sensitiveKeys: ['myCustomSecret', 'internalId'],
-  customPatterns: [
-    { name: 'order-id', pattern: /ORDER-\d{6,}/g, replacement: 'ORDER-[REDACTED]' },
-  ],
-  fullMask: false,     // false = partial mask (show first/last chars)
-  maskChar: '*',
-});
-```
-
-Default masked keys: `password`, `passwd`, `secret`, `token`, `apiKey`, `api_key`, `authorization`, `auth`, `credential`, `private`, `ssn`, `creditCard`, `cardNumber`, `cvv`, `pin`, `accountNumber`, and 50+ more.
-
-## Working with Existing Loggers
-
-### Winston
-
-```typescript
-import 'dev-log-monitor/auto';
-import winston from 'winston';
-import { wrapLogger } from 'dev-log-monitor';
-
-const logger = winston.createLogger({
-  level: 'info',
-  transports: [new winston.transports.Console()],
-});
-
-// Wrap your existing logger
-const wrappedLogger = wrapLogger(logger, 'winston');
-
-wrappedLogger.info('This appears in dev-log UI!');
-```
-
-### Pino
-
-```typescript
-import 'dev-log-monitor/auto';
-import pino from 'pino';
-import { wrapLogger } from 'dev-log-monitor';
-
-const logger = pino();
-const wrappedLogger = wrapLogger(logger, 'pino');
-
-wrappedLogger.info('This appears in dev-log UI!');
-```
-
-### Bunyan
-
-```typescript
-import 'dev-log-monitor/auto';
-import bunyan from 'bunyan';
-import { wrapLogger } from 'dev-log-monitor';
-
-const logger = bunyan.createLogger({ name: 'myapp' });
-const wrappedLogger = wrapLogger(logger, 'bunyan');
-
-wrappedLogger.info('This appears in dev-log UI!');
-```
-
-### Custom Logger
-
-```typescript
-import { wrapLogger } from 'dev-log-monitor';
-
-const myCustomLogger = {
-  info: (msg: string) => { /* ... */ },
-  error: (msg: string) => { /* ... */ },
-};
-
-const wrappedLogger = wrapLogger(myCustomLogger, 'custom');
-```
+---
 
 ## Framework Integration
 
@@ -213,12 +106,9 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: devLogger.nest(),  // Optional: Replace NestJS logger
+    logger: devLogger.nest(),
   });
-
-  // Add request context tracking
   app.useGlobalInterceptors(new DevLogContextInterceptor());
-
   await app.listen(3000);
 }
 bootstrap();
@@ -236,7 +126,6 @@ export class UserService {
 
   async createUser(data: CreateUserDto) {
     this.logger.info('Creating user', { email: data.email });
-    // Logs will be correlated by request
   }
 }
 ```
@@ -249,17 +138,34 @@ import express from 'express';
 import { expressContextMiddleware } from 'dev-log-monitor';
 
 const app = express();
-
-// Add request context tracking (optional but recommended)
 app.use(expressContextMiddleware());
 
 app.get('/api/users', (req, res) => {
   console.log('Fetching users');  // Automatically captured!
-  req.log?.info('Request received');  // Or use scoped logger
   res.json({ users: [] });
 });
 
 app.listen(3000);
+```
+
+### Winston / Pino / Bunyan
+
+```typescript
+import 'dev-log-monitor/auto';
+import { wrapLogger } from 'dev-log-monitor';
+
+// Winston
+import winston from 'winston';
+const winstonLogger = winston.createLogger({ level: 'info', transports: [new winston.transports.Console()] });
+const logger = wrapLogger(winstonLogger, 'winston');
+
+// Pino
+import pino from 'pino';
+const pinoLogger = wrapLogger(pino(), 'pino');
+
+// Bunyan
+import bunyan from 'bunyan';
+const bunyanLogger = wrapLogger(bunyan.createLogger({ name: 'myapp' }), 'bunyan');
 ```
 
 ### Plain Node.js
@@ -267,7 +173,7 @@ app.listen(3000);
 ```typescript
 import 'dev-log-monitor/auto';
 
-// All console.log calls are now captured
+// All console calls are now captured
 console.log('Application started');
 console.warn('Cache miss', { key: 'user:123' });
 console.error('Database connection failed');
@@ -277,42 +183,82 @@ import { devLogger } from 'dev-log-monitor';
 devLogger.info('Direct log', { data: 'value' });
 ```
 
-## Request Context & Correlation
+---
 
-Track logs across async operations:
+## Configuration
+
+All config via environment variables - no config files needed:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DEV_LOG_PORT` | `3333` | Web UI port |
+| `DEV_LOG_DIR` | `.dev-log` | Log storage directory |
+| `DEV_LOG_RETENTION` | `3` | Days to keep logs |
+| `DEV_LOG_CONSOLE` | `true` | Also print to console |
+| `DEV_LOG_INTERCEPT` | `true` | Intercept console.log calls |
+| `DEV_LOG_MASKING` | `true` | Auto-mask sensitive data |
+| `DEV_LOG_STORAGE_LEVEL` | `debug` | Minimum level to persist |
+| `DEV_LOG_DISABLE` | `false` | Disable entirely |
+
+Or configure programmatically:
+
+```typescript
+import { autoInit } from 'dev-log-monitor';
+
+await autoInit({
+  port: 3333,
+  logDir: '.dev-log',
+  retentionDays: 3,
+  consoleOutput: true,
+  interceptConsole: true,
+  storageLevel: 'debug',
+  maxFileSize: 50 * 1024 * 1024,
+  maxTotalSize: 100 * 1024 * 1024,
+});
+```
+
+---
+
+## Web UI
+
+Open `http://localhost:3333` after adding the import.
+
+**Keyboard Shortcuts:**
+
+| Key | Action | Key | Action |
+|-----|--------|-----|--------|
+| `/` | Focus search | `t` | Toggle theme |
+| `j/k` | Next/prev log | `m` | Toggle metrics |
+| `Enter` | Expand/collapse | `e` | Export logs |
+| `1-4` | Filter by level | `c` | Clear logs |
+| `?` | Show shortcuts | `Esc` | Close/clear |
+
+**Error details** show source location, breadcrumbs (last 10 logs before the error), and parsed stack traces with your app code highlighted.
+
+---
+
+## Request Context & Correlation
 
 ```typescript
 import { asyncContext, getTraceId } from 'dev-log-monitor';
 
-// Wrap async operations to correlate logs
 asyncContext.run(() => {
   console.log('Start processing');  // auto-assigned traceId
   someAsyncOperation().then(() => {
     console.log('Done processing');  // same traceId
   });
 }, { method: 'GET', path: '/api/users' });
-
-// Or with a custom traceId
-asyncContext.run(() => {
-  const id = getTraceId();  // returns the auto-generated or custom traceId
-  console.log(`Processing with trace: ${id}`);
-}, { traceId: 'custom-trace-123' });
 ```
 
-## Alerting
+---
 
-Get notified when important events occur:
+## Alerting
 
 ```typescript
 import { addAlertRule, addWebhook } from 'dev-log-monitor';
 
-// Add a webhook endpoint
-addWebhook('slack', {
-  url: 'https://hooks.slack.com/services/xxx',
-  method: 'POST',
-});
+addWebhook('slack', { url: 'https://hooks.slack.com/services/xxx', method: 'POST' });
 
-// Alert on high error rate
 addAlertRule({
   id: 'high-error-rate',
   name: 'High Error Rate',
@@ -320,134 +266,34 @@ addAlertRule({
   handlers: ['webhook:slack', 'console'],
   cooldownMs: 60_000,
 });
-
-// Alert on specific patterns
-addAlertRule({
-  id: 'payment-errors',
-  name: 'Payment Failures',
-  condition: { type: 'pattern', pattern: /payment.*failed/i, level: 'error' },
-  handlers: ['console'],
-  cooldownMs: 10_000,
-});
-
-// Alert on slow operations
-addAlertRule({
-  id: 'slow-ops',
-  name: 'Slow Operations',
-  condition: { type: 'slow_operation', threshold: 1000 },
-  handlers: ['console'],
-});
-
-// Custom condition
-addAlertRule({
-  id: 'custom',
-  name: 'Custom Check',
-  condition: {
-    type: 'custom',
-    check: (entry) => entry.level === 'error' && entry.context === 'PaymentService',
-  },
-  handlers: ['console'],
-});
 ```
 
-## Metrics
+---
 
-Track log statistics:
+## Sensitive Data Masking
 
 ```typescript
-import { getMetrics, onMetricsUpdate } from 'dev-log-monitor';
+import { configureMasking } from 'dev-log-monitor';
 
-// Get current metrics snapshot
-const snapshot = getMetrics();
-console.log(snapshot.counts);
-// { debug: 100, info: 800, warn: 200, error: 134, total: 1234 }
-console.log(snapshot.errorRate);       // errors per minute
-console.log(snapshot.logsPerSecond);   // throughput
-console.log(snapshot.recentErrors);    // last N errors
-console.log(snapshot.slowOperations);  // operations exceeding threshold
-console.log(snapshot.contextCounts);   // counts per service/context
-
-// Subscribe to metrics updates
-const unsubscribe = onMetricsUpdate((snapshot) => {
-  if (snapshot.errorRate > 5) {
-    console.warn('High error rate detected!');
-  }
+configureMasking({
+  enabled: true,
+  sensitiveKeys: ['myCustomSecret'],
+  customPatterns: [
+    { name: 'order-id', pattern: /ORDER-\d{6,}/g, replacement: 'ORDER-[REDACTED]' },
+  ],
+  fullMask: false,
+  maskChar: '*',
 });
-
-// Later: stop listening
-unsubscribe();
 ```
 
-## Web UI
+> Built-in: `password`, `token`, `apiKey`, `authorization`, `ssn`, `creditCard`, `cvv`, `pin`, and 50+ more.
 
-After adding the import, open http://localhost:3333 in your browser.
-
-### Features
-
-- **Real-time streaming** - Logs appear instantly via WebSocket
-- **Filter by level** - Click debug/info/warn/error buttons
-- **Filter by source** - Filter by console/nest/express/winston/pino/etc.
-- **Filter by time** - Last 5m, 15m, 1h, 24h
-- **Filter by context** - Filter by service/module
-- **Full-text search** - With regex support and case sensitivity toggle
-- **Dark/Light theme** - Toggle with `t` key or button
-
-### Keyboard Shortcuts
-
-| Key | Action |
-|-----|--------|
-| `/` | Focus search |
-| `j` | Next log |
-| `k` | Previous log |
-| `Enter` | Expand/collapse selected |
-| `1-4` | Filter by level (1=debug, 4=error) |
-| `t` | Toggle theme |
-| `m` | Toggle metrics panel |
-| `e` | Export logs |
-| `c` | Clear logs |
-| `?` | Show keyboard shortcuts |
-| `Esc` | Close modals/clear selection |
-
-### Enhanced Error Display
-
-Click on an error to see full details:
-
-```
-+--------------------------------------------------------------+
-| ERROR  [OrderService]              +150ms  <- order.ts:45    |
-+--------------------------------------------------------------+
-| Order processing failed                                       |
-|                                                               |
-| Source: order.service.ts:45:12 -> processOrder()             |
-|                                                               |
-| BREADCRUMBS (what happened before)                 last 180ms |
-|  +- 14:32:05.720  DEBUG  Validating inventory                |
-|  +- 14:32:05.750  DEBUG  Calculating totals                  |
-|  +- 14:32:05.850  DEBUG  Processing payment                  |
-|                                                               |
-| STACK TRACE                                   [Copy] [Raw]    |
-|  > OrderService.processOrder    order.service.ts:45:12       |
-|    OrderController.create       order.controller.ts:28       |
-|    ... 5 more frames (node_modules)          [expand]        |
-+--------------------------------------------------------------+
-```
-
-## CLI
-
-```bash
-# Clear all logs
-npx dev-log-monitor clear
-
-# Show log storage status
-npx dev-log-monitor status
-
-# Help
-npx dev-log-monitor help
-```
+---
 
 ## API Reference
 
-### Auto-Integration
+<details>
+<summary><strong>Auto-Integration</strong></summary>
 
 | Export | Description |
 |--------|-------------|
@@ -461,7 +307,10 @@ npx dev-log-monitor help
 | `expressContextMiddleware()` | Express middleware for context |
 | `DevLogContextInterceptor` | NestJS interceptor for context |
 
-### Alerting
+</details>
+
+<details>
+<summary><strong>Alerting</strong></summary>
 
 | Export | Description |
 |--------|-------------|
@@ -469,14 +318,20 @@ npx dev-log-monitor help
 | `addWebhook(name, config)` | Add named webhook endpoint |
 | `configureAlerts(config)` | Configure alerts with rules and webhooks |
 
-### Metrics
+</details>
+
+<details>
+<summary><strong>Metrics</strong></summary>
 
 | Export | Description |
 |--------|-------------|
 | `getMetrics()` | Get current metrics snapshot |
 | `onMetricsUpdate(callback)` | Subscribe to metrics updates (returns unsubscribe fn) |
 
-### Core Logger
+</details>
+
+<details>
+<summary><strong>Core Logger</strong></summary>
 
 | Method | Description |
 |--------|-------------|
@@ -490,7 +345,10 @@ npx dev-log-monitor help
 | `devLogger.express()` | Get Express middleware |
 | `devLogger.shutdown()` | Gracefully shutdown |
 
-### Scoped Logger
+</details>
+
+<details>
+<summary><strong>Scoped Logger</strong></summary>
 
 | Method | Description |
 |--------|-------------|
@@ -500,26 +358,36 @@ npx dev-log-monitor help
 | `logger.error(message, metadata?)` | Log error with context |
 | `logger.startTimer(operation)` | Start operation timer |
 
+</details>
+
+---
+
+## CLI
+
+```bash
+npx dev-log-monitor clear    # Clear all logs
+npx dev-log-monitor status   # Show storage status
+npx dev-log-monitor help     # Help
+```
+
+---
+
 ## Log Storage
 
-Logs are stored in `.dev-log/` directory in JSONL format.
-Files are named by date: `logs-YYYY-MM-DD.jsonl`.
+Logs are stored in `.dev-log/` in JSONL format, named by date (`logs-YYYY-MM-DD.jsonl`).
 
-Add to your `.gitignore`:
-
+Add to `.gitignore`:
 ```
 .dev-log/
 ```
 
 ## Requirements
 
-- Node.js >= 18.0.0
-- TypeScript (optional, but recommended)
+- **Node.js** >= 18.0.0
+- **TypeScript** optional, but recommended
+- **Peer deps** (optional): `@nestjs/common` >= 9.0.0, `express` >= 4.0.0
 
-## Peer Dependencies (Optional)
-
-- `@nestjs/common` >= 9.0.0 (for NestJS adapter)
-- `express` >= 4.0.0 (for Express middleware)
+---
 
 ## License
 
